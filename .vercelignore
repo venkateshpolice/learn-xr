@@ -1,3 +1,2 @@
-# Unused duplicate source assets (not referenced by the app)
-public/models/a-z/dog/labrador-dog.zip
-public/models/a-z/dog/labrador-dog/
+# A–Z models are served from S3 (see src/data/a-z-models.ts)
+public/models/a-z/
