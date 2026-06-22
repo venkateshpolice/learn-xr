@@ -521,16 +521,25 @@ function BarMagnet3D({
 }
 
 function MagneticFieldLines({ physics, forceType }: { physics: React.RefObject<{ a: MagnetBody; b: MagnetBody }>; forceType: ForceType }) {
-  const lineRef = useRef<THREE.Line>(null);
+  const lineObject = useMemo(() => {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(75, 3));
+    const material = new THREE.LineBasicMaterial({ color: "#66bb6a", transparent: true, opacity: 0.75 });
+    return new THREE.Line(geometry, material);
+  }, []);
+  const lineRef = useRef<THREE.Line>(lineObject);
   const { a, b } = physics.current;
   const pair = getClosestPolePair(a, b);
 
   useFrame(() => {
-    if (!lineRef.current || forceType === "none") {
-      if (lineRef.current) lineRef.current.visible = false;
+    const line = lineRef.current;
+    if (!line || forceType === "none") {
+      if (line) line.visible = false;
       return;
     }
-    lineRef.current.visible = true;
+    line.visible = true;
+    const material = line.material as THREE.LineBasicMaterial;
+    material.color.set(forceType === "repel" ? "#ef5350" : "#66bb6a");
     const from = getPoleWorldPos(physics.current.a, pair.p1);
     const to = getPoleWorldPos(physics.current.b, pair.p2);
     const pts: number[] = [];
@@ -540,17 +549,12 @@ function MagneticFieldLines({ physics, forceType }: { physics: React.RefObject<{
       mid.y += Math.sin(t * Math.PI) * (forceType === "repel" ? -0.5 : 0.6);
       pts.push(mid.x, mid.y + 0.1, mid.z);
     }
-    const geo = lineRef.current.geometry as THREE.BufferGeometry;
+    const geo = line.geometry as THREE.BufferGeometry;
     geo.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
     geo.computeBoundingSphere();
   });
 
-  return (
-    <line ref={lineRef}>
-      <bufferGeometry />
-      <lineBasicMaterial color={forceType === "repel" ? "#ef5350" : "#66bb6a"} transparent opacity={0.75} />
-    </line>
-  );
+  return <primitive ref={lineRef} object={lineObject} />;
 }
 
 function ForceArrows({ physics, forceType }: { physics: React.RefObject<{ a: MagnetBody; b: MagnetBody }>; forceType: ForceType }) {

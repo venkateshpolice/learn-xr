@@ -16,7 +16,6 @@ const KNOWN_CIDS: Record<string, number> = {
   C6H12O6: 5793,
   H2O4S: 1118,
   HNO3: 944,
-  C6H12O6: 5793,
   H2O2: 784,
   H2: 783,
   Cl2: 24526,
