@@ -158,7 +158,7 @@ export default function Features() {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-950/15 to-transparent pointer-events-none" />
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader
-          // eyebrw="Features"
+          eyebrow="Features"
           title={<>Why Immersive Learning <span className="gradient-text">Works</span></>}
           description="Research shows students retain 75% more through experiential learning. Explore physics, math, chemistry, and biology labs in 3D."
         />
