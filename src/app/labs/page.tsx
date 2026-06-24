@@ -1,11 +1,19 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, FlaskConical } from "lucide-react";
 import { LABS } from "@/data/labs-data";
+import { siteImages } from "@/data/site-images";
 
 export default function LabsPage() {
+  const totalExperiments = LABS.reduce((sum, lab) => sum + lab.experiments.length, 0);
+  const liveCount = LABS.reduce(
+    (sum, lab) => sum + lab.experiments.filter((e) => e.status === "available").length,
+    0,
+  );
+
   return (
     <div className="min-h-screen w-full text-white relative overflow-hidden bg-[#060a14]">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -33,6 +41,46 @@ export default function LabsPage() {
             <p className="text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed">
               Step into our virtual laboratories. Conduct experiments, visualize concepts, and learn by doing — all in immersive 3D environments.
             </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.15 }}
+            className="relative group w-full mb-12 sm:mb-16"
+          >
+            <div className="absolute -inset-1 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-cyan-500/25 via-indigo-500/15 to-emerald-500/25 blur-md opacity-60 pointer-events-none" />
+            <div className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 bg-slate-950/80">
+              <div
+                className="absolute inset-0 opacity-[0.3]"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle at 1px 1px, rgba(148,163,184,0.1) 1px, transparent 0)",
+                  backgroundSize: "28px 28px",
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent z-10 pointer-events-none" />
+              <div className="relative w-full flex items-center justify-center p-3 sm:p-5 lg:p-6">
+                <Image
+                  src={siteImages.stemLabsInteractive}
+                  alt="Students exploring interactive STEM labs in 3D with virtual experiments"
+                  width={1400}
+                  height={900}
+                  sizes="100vw"
+                  priority
+                  className="relative z-[1] w-full h-auto object-contain"
+                />
+              </div>
+              <div className="relative z-20 border-t border-white/[0.06] px-4 sm:px-6 py-3 sm:py-4 bg-slate-950/70 backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <FlaskConical className="w-4 h-4 text-cyan-400" />
+                  <span className="text-xs sm:text-sm font-semibold text-white">Interactive STEM Environment</span>
+                </div>
+                <span className="text-[10px] sm:text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+                  {liveCount} live · {totalExperiments} total
+                </span>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>

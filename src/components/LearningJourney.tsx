@@ -3,7 +3,10 @@
 import { motion, useInView } from "framer-motion";
 import { useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronRight, Sparkles } from "lucide-react";
+import SectionHeader from "@/components/ui/SectionHeader";
+import { siteImages } from "@/data/site-images";
 import { nurseryCategories, getCategoryHref } from "@/data/nursery-categories";
 
 interface GradeData {
@@ -11,11 +14,7 @@ interface GradeData {
   label: string;
   age: string;
   color: string;
-  subjects: {
-    name: string;
-    emoji: string;
-    topics: string[];
-  }[];
+  subjects: { name: string; emoji: string; topics: string[] }[];
   highlight?: string;
 }
 
@@ -26,9 +25,7 @@ const grades: GradeData[] = [
     age: "3–5 Years",
     color: "from-pink-500 to-rose-400",
     highlight: "Scan a flashcard → A 3D Lion appears and roars!",
-    subjects: [
-      { name: "AR Modules", emoji: "📱", topics: ["Alphabet Recognition", "Numbers & Counting", "Shapes", "Colors", "Fruits & Vegetables", "Animals & Birds", "Body Parts", "Rhymes in AR", "Storytelling"] },
-    ],
+    subjects: [{ name: "AR Modules", emoji: "📱", topics: ["Alphabet Recognition", "Numbers & Counting", "Shapes", "Colors", "Animals & Birds"] }],
   },
   {
     id: "grade-1-3",
@@ -39,7 +36,6 @@ const grades: GradeData[] = [
       { name: "Science", emoji: "🔬", topics: ["Plants", "Animal Habitats", "Human Body Basics", "Weather"] },
       { name: "Mathematics", emoji: "🧮", topics: ["Addition", "Subtraction", "Multiplication", "Geometry Basics"] },
       { name: "English", emoji: "📖", topics: ["Vocabulary", "Pronunciation", "Interactive Stories"] },
-      { name: "Social Studies", emoji: "🏘️", topics: ["Community Helpers", "Transport Systems"] },
     ],
   },
   {
@@ -51,7 +47,6 @@ const grades: GradeData[] = [
       { name: "Science", emoji: "🔬", topics: ["Solar System", "Food Chain", "Water Cycle", "Earth Structure"] },
       { name: "Mathematics", emoji: "🧮", topics: ["Fractions", "Decimals", "Area & Perimeter"] },
       { name: "Geography", emoji: "🌍", topics: ["Continents", "Oceans", "Mountains"] },
-      { name: "History", emoji: "🏛️", topics: ["Ancient Civilizations"] },
     ],
   },
   {
@@ -62,8 +57,6 @@ const grades: GradeData[] = [
     subjects: [
       { name: "Science", emoji: "🔬", topics: ["Human Anatomy", "Ecosystems", "States of Matter", "Electricity"] },
       { name: "Mathematics", emoji: "🧮", topics: ["Algebra", "Geometry", "Statistics"] },
-      { name: "Geography", emoji: "🌍", topics: ["Volcanoes", "Rivers", "Climate"] },
-      { name: "History", emoji: "🏛️", topics: ["World History", "Indian History"] },
       { name: "Computer Science", emoji: "💻", topics: ["Coding Basics", "Logic Building"] },
     ],
   },
@@ -76,7 +69,6 @@ const grades: GradeData[] = [
       { name: "Physics", emoji: "⚡", topics: ["Force", "Motion", "Electricity", "Optics"] },
       { name: "Chemistry", emoji: "⚗️", topics: ["Molecules", "Atomic Structure", "Chemical Reactions"] },
       { name: "Biology", emoji: "🧬", topics: ["Cell Structure", "Human Systems", "Genetics"] },
-      { name: "Mathematics", emoji: "📐", topics: ["Trigonometry", "Coordinate Geometry"] },
     ],
   },
   {
@@ -87,7 +79,6 @@ const grades: GradeData[] = [
     subjects: [
       { name: "Physics VR Labs", emoji: "⚡", topics: ["Electromagnetic Fields", "Wave Motion", "Optics Experiments"] },
       { name: "Chemistry VR Labs", emoji: "⚗️", topics: ["Chemical Bonding", "Organic Chemistry", "Virtual Lab Experiments"] },
-      { name: "Biology", emoji: "🧬", topics: ["Human Anatomy", "DNA", "Biotechnology"] },
       { name: "Mathematics", emoji: "📐", topics: ["Calculus", "Probability", "3D Geometry"] },
     ],
   },
@@ -95,128 +86,121 @@ const grades: GradeData[] = [
 
 export default function LearningJourney() {
   const [activeGrade, setActiveGrade] = useState("nursery");
-  const headerRef = useRef(null);
-  const isHeaderInView = useInView(headerRef, { once: true, margin: "-100px" });
-
+  const panelRef = useRef(null);
+  const panelInView = useInView(panelRef, { once: true, margin: "-60px" });
   const activeData = grades.find((g) => g.id === activeGrade)!;
 
   return (
-    <section id="learning-journey" className="py-32 px-6 relative">
-      <div className="max-w-7xl mx-auto">
-        <motion.div
-          ref={headerRef}
-          initial={{ opacity: 0, y: 30 }}
-          animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <span className="text-sm font-semibold text-amber-400 uppercase tracking-wider">
-            Learning Journey
-          </span>
-          <h2 className="text-4xl md:text-5xl font-bold mt-4 mb-6">
-            Grade-Wise{" "}
-            <span className="gradient-text">Curriculum</span>
-          </h2>
-          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-            A carefully crafted immersive learning path from nursery through
-            high school, aligned with standard curricula.
-          </p>
-        </motion.div>
+    <section id="learning-journey" className="relative py-16 sm:py-20 lg:py-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SectionHeader
+          eyebrow="Learning Journey"
+          eyebrowColor="text-amber-400"
+          title={<>Grade-Wise <span className="gradient-text">Curriculum</span></>}
+          description="A carefully crafted immersive learning path from nursery through high school, aligned with standard curricula."
+        />
 
-        {/* Grade Tabs */}
-        <div className="flex flex-wrap justify-center gap-2 mb-12">
-          {grades.map((grade) => (
-            <button
-              key={grade.id}
-              onClick={() => setActiveGrade(grade.id)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                activeGrade === grade.id
-                  ? "bg-gradient-to-r " + grade.color + " text-white shadow-lg scale-105"
-                  : "glass-card text-slate-300 hover:text-white hover:bg-white/[0.08]"
-              }`}
-            >
-              {grade.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Active Grade Content */}
-        <motion.div
-          key={activeGrade}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="glass-card rounded-3xl p-8 md:p-12"
-        >
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-            <div>
-              <h3 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-                <span
-                  className={`inline-block w-3 h-3 rounded-full bg-gradient-to-r ${activeData.color}`}
-                />
-                {activeData.label}
-              </h3>
-              <p className="text-slate-400 mt-1">{activeData.age}</p>
+        <div className="grid lg:grid-cols-[1fr_minmax(0,0.9fr)] gap-8 lg:gap-10 items-start">
+          <div className="order-2 lg:order-1">
+            <div className="flex flex-wrap gap-2 mb-6">
+              {grades.map((grade) => (
+                <button
+                  key={grade.id}
+                  type="button"
+                  onClick={() => setActiveGrade(grade.id)}
+                  className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 min-h-[40px] ${
+                    activeGrade === grade.id
+                      ? `bg-gradient-to-r ${grade.color} text-white shadow-lg`
+                      : "glass-card text-slate-300 hover:text-white hover:bg-white/[0.08]"
+                  }`}
+                >
+                  {grade.label}
+                </button>
+              ))}
             </div>
-            {activeData.highlight && (
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500/10 to-rose-500/10 border border-pink-500/20">
-                <Sparkles className="w-4 h-4 text-pink-400" />
-                <span className="text-sm text-pink-300">{activeData.highlight}</span>
+
+            <motion.div
+              key={activeGrade}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35 }}
+              className="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8">
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full bg-gradient-to-r ${activeData.color}`} />
+                    {activeData.label}
+                  </h3>
+                  <p className="text-slate-400 text-sm mt-1">{activeData.age}</p>
+                </div>
+                {activeData.highlight && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-pink-500/10 border border-pink-500/20 max-w-full">
+                    <Sparkles className="w-4 h-4 text-pink-400 shrink-0" />
+                    <span className="text-xs sm:text-sm text-pink-300">{activeData.highlight}</span>
+                  </div>
+                )}
               </div>
-            )}
+
+              {activeGrade === "nursery" ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                  {nurseryCategories.map((category) => (
+                    <Link
+                      key={category.id}
+                      href={getCategoryHref(category)}
+                      className="group rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 sm:p-4 hover:bg-white/[0.06] transition-all text-center"
+                    >
+                      <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center mx-auto mb-2 group-hover:scale-105 transition-transform`}>
+                        <span className="text-2xl">{category.emoji}</span>
+                      </div>
+                      <h4 className="font-semibold text-white text-xs sm:text-sm">{category.label}</h4>
+                      <p className="text-[10px] text-slate-500">{category.items.length} items</p>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
+                  {activeData.subjects.map((subject) => (
+                    <div key={subject.name} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 sm:p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-xl">{subject.emoji}</span>
+                        <h4 className="font-semibold text-white text-sm sm:text-base">{subject.name}</h4>
+                      </div>
+                      <ul className="space-y-1.5">
+                        {subject.topics.map((topic) => (
+                          <li key={topic} className="flex items-center gap-2 text-xs sm:text-sm text-slate-400">
+                            <ChevronRight className="w-3 h-3 text-indigo-400 shrink-0" />
+                            {topic}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
           </div>
 
-          {activeGrade === "nursery" ? (
-            /* Nursery Category Cards */
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {nurseryCategories.map((category) => (
-                <Link
-                  key={category.id}
-                  href={getCategoryHref(category)}
-                  className="group rounded-2xl bg-white/[0.03] border border-white/[0.06] p-5 hover:bg-white/[0.06] transition-all duration-300 hover:scale-[1.03] hover:border-white/20 text-center"
-                >
-                  <div
-                    className={`w-16 h-16 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg`}
-                  >
-                    <span className="text-3xl">{category.emoji}</span>
-                  </div>
-                  <h4 className="font-semibold text-white text-sm mb-1">
-                    {category.label}
-                  </h4>
-                  <p className="text-xs text-slate-500">
-                    {category.items.length} items
-                  </p>
-                </Link>
-              ))}
+          <motion.div
+            ref={panelRef}
+            initial={{ opacity: 0, y: 24 }}
+            animate={panelInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7 }}
+            className="order-1 lg:order-2 relative"
+          >
+            <div className="absolute -inset-0.5 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-500/20 via-pink-500/15 to-violet-500/20 blur-sm" />
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10">
+              <Image
+                src={siteImages.audience3dLearning}
+                alt="Interactive 3D learning for nursery and lower grades"
+                width={1200}
+                height={900}
+                sizes="(max-width: 1024px) 100vw, 45vw"
+                className="w-full h-auto object-cover aspect-[4/3]"
+              />
             </div>
-          ) : (
-            /* Other Grades - Subject Cards */
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {activeData.subjects.map((subject) => (
-                <div
-                  key={subject.name}
-                  className="rounded-2xl bg-white/[0.03] border border-white/[0.06] p-6 hover:bg-white/[0.06] transition-all duration-300"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-2xl">{subject.emoji}</span>
-                    <h4 className="font-semibold text-white">{subject.name}</h4>
-                  </div>
-                  <ul className="space-y-2">
-                    {subject.topics.map((topic) => (
-                      <li
-                        key={topic}
-                        className="flex items-center gap-2 text-sm text-slate-400"
-                      >
-                        <ChevronRight className="w-3 h-3 text-indigo-400 shrink-0" />
-                        {topic}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          )}
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );

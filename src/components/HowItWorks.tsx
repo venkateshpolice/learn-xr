@@ -2,108 +2,107 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import Image from "next/image";
 import { Headset, BookOpen, Gamepad2, Award } from "lucide-react";
+import SectionHeader from "@/components/ui/SectionHeader";
+import { siteImages } from "@/data/site-images";
 
 const steps = [
   {
     number: "01",
     icon: Headset,
     title: "Put On Your Headset",
-    description:
-      "Grab a VR headset or use your phone's AR capabilities. Our platform works with all major devices.",
-    color: "indigo",
+    description: "Grab a VR headset or use your phone's AR capabilities. Works with all major devices.",
+    color: "from-indigo-500 to-violet-500",
   },
   {
     number: "02",
     icon: BookOpen,
     title: "Choose Your Subject",
-    description:
-      "Pick from science, history, mathematics, geography, or biology. New subjects are added monthly.",
-    color: "cyan",
+    description: "Pick from science, history, mathematics, geography, or biology. New subjects monthly.",
+    color: "from-cyan-500 to-blue-500",
   },
   {
     number: "03",
     icon: Gamepad2,
     title: "Interact & Explore",
-    description:
-      "Walk around, touch objects, conduct experiments. Every interaction is designed to teach a concept.",
-    color: "pink",
+    description: "Walk around, touch objects, conduct experiments. Every interaction teaches a concept.",
+    color: "from-pink-500 to-rose-500",
   },
   {
     number: "04",
     icon: Award,
     title: "Earn & Progress",
-    description:
-      "Complete challenges, earn badges, and track your progress. Teachers get detailed analytics.",
-    color: "emerald",
+    description: "Complete challenges, earn badges, and track progress. Teachers get detailed analytics.",
+    color: "from-emerald-500 to-teal-500",
   },
 ];
 
-export default function HowItWorks() {
-  const headerRef = useRef(null);
-  const isHeaderInView = useInView(headerRef, { once: true, margin: "-100px" });
+function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-50px" });
 
   return (
-    <section id="how-it-works" className="py-32 px-6 relative">
-      <div className="max-w-6xl mx-auto">
-        <motion.div
-          ref={headerRef}
-          initial={{ opacity: 0, y: 30 }}
-          animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-20"
-        >
-          <span className="text-sm font-semibold text-cyan-400 uppercase tracking-wider">
-            How It Works
-          </span>
-          <h2 className="text-4xl md:text-5xl font-bold mt-4 mb-6">
-            Start Learning in{" "}
-            <span className="gradient-text">4 Simple Steps</span>
-          </h2>
-          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-            Getting started with immersive learning is easier than you think.
-          </p>
-        </motion.div>
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 28 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.55, delay: index * 0.1 }}
+      className="relative"
+    >
+      <div className="glass-card rounded-xl sm:rounded-2xl p-5 sm:p-6 h-full hover:bg-white/[0.07] transition-colors">
+        <div className="flex items-center gap-3 mb-4">
+          <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center shrink-0`}>
+            <step.icon className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-3xl font-black text-white/10">{step.number}</span>
+        </div>
+        <h3 className="text-base sm:text-lg font-bold mb-2 text-white">{step.title}</h3>
+        <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">{step.description}</p>
+      </div>
+    </motion.div>
+  );
+}
 
-        <div className="relative">
-          {/* Connection line */}
-          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500/50 via-cyan-500/50 to-pink-500/50 -translate-y-1/2" />
+export default function HowItWorks() {
+  const imageRef = useRef(null);
+  const imageInView = useInView(imageRef, { once: true, margin: "-60px" });
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {steps.map((step, index) => {
-              const StepCard = () => {
-                const ref = useRef(null);
-                const isInView = useInView(ref, {
-                  once: true,
-                  margin: "-50px",
-                });
+  return (
+    <section id="how-it-works" className="relative py-16 sm:py-20 lg:py-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SectionHeader
+          eyebrow="How It Works"
+          eyebrowColor="text-cyan-400"
+          title={<>Start Learning in <span className="gradient-text">4 Simple Steps</span></>}
+          description="Open on any device, point at a marker or surface, and start exploring in seconds."
+        />
 
-                return (
-                  <motion.div
-                    ref={ref}
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={isInView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ duration: 0.6, delay: index * 0.15 }}
-                    className="relative text-center"
-                  >
-                    <div className="relative z-10 glass-card rounded-2xl p-8 hover:bg-white/[0.08] transition-all duration-300">
-                      <div className="text-5xl font-black text-white/5 absolute top-4 right-4">
-                        {step.number}
-                      </div>
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600/30 to-cyan-600/30 border border-indigo-500/30 flex items-center justify-center mx-auto mb-6">
-                        <step.icon className="w-8 h-8 text-indigo-300" />
-                      </div>
-                      <h3 className="text-lg font-bold mb-3">{step.title}</h3>
-                      <p className="text-slate-400 text-sm leading-relaxed">
-                        {step.description}
-                      </p>
-                    </div>
-                  </motion.div>
-                );
-              };
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <motion.div
+            ref={imageRef}
+            initial={{ opacity: 0, x: -24 }}
+            animate={imageInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.7 }}
+            className="relative order-2 lg:order-1"
+          >
+            <div className="absolute -inset-0.5 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-cyan-500/25 to-indigo-500/25 blur-sm" />
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10">
+              <Image
+                src={siteImages.vrSpaceStation}
+                alt="How interactive 3D learning works — scan, explore, and learn"
+                width={1200}
+                height={800}
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="w-full h-auto object-cover aspect-[4/3] sm:aspect-[3/2]"
+              />
+            </div>
+          </motion.div>
 
-              return <StepCard key={step.number} />;
-            })}
+          <div className="order-1 lg:order-2 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            {steps.map((step, i) => (
+              <StepCard key={step.number} step={step} index={i} />
+            ))}
           </div>
         </div>
       </div>

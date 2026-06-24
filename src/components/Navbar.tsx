@@ -10,8 +10,8 @@ const navLinks = [
   { href: "#audience", label: "Audience" },
   { href: "#learning-journey", label: "Curriculum" },
   { href: "/labs", label: "Labs" },
-  { href: "#ar-experiences", label: "AR" },
-  { href: "#vr-experiences", label: "VR" },
+  { href: "/ar", label: "AR" },
+  { href: "/vr", label: "VR" },
   { href: "#testimonials", label: "Testimonials" },
 ];
 

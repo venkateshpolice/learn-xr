@@ -1,25 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { siteImages } from "@/data/site-images";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/10 py-16 px-6">
+    <footer className="border-t border-white/10 pt-12 sm:pt-16 pb-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-4 gap-12 mb-12">
-          <div className="md:col-span-1">
+        <div className="grid lg:grid-cols-[1.2fr_2fr] gap-10 lg:gap-12 mb-12">
+          <div>
             <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
                   <circle cx="12" cy="12" r="3" />
                 </svg>
@@ -28,144 +21,59 @@ export default function Footer() {
                 Learn<span className="text-indigo-400">XR</span>
               </span>
             </Link>
-            <p className="text-slate-400 text-sm leading-relaxed">
+            <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-sm">
               Making education immersive, interactive, and unforgettable through
               AR & VR technology.
             </p>
+            
           </div>
 
-          <div>
-            <h4 className="font-semibold mb-4 text-white">Platform</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  For Students
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  For Schools
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  For Teachers
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  Pricing
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold mb-4 text-white">Subjects</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  Science
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  History
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  Mathematics
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  Geography
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold mb-4 text-white">Company</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  Careers
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-10">
+            <div>
+              <h4 className="font-semibold mb-3 sm:mb-4 text-white text-sm">Platform</h4>
+              <ul className="space-y-2.5">
+                {["For Students", "For Schools", "For Teachers", "Pricing"].map((item) => (
+                  <li key={item}>
+                    <Link href="#" className="text-sm text-slate-400 hover:text-white transition-colors">{item}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3 sm:mb-4 text-white text-sm">Subjects</h4>
+              <ul className="space-y-2.5">
+                {[
+                  { label: "Science", href: "/labs" },
+                  { label: "Mathematics", href: "/trigonometry" },
+                  { label: "Chemistry", href: "/chemistry-lab" },
+                  { label: "Biology", href: "/photosynthesis" },
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="text-sm text-slate-400 hover:text-white transition-colors">{item.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <h4 className="font-semibold mb-3 sm:mb-4 text-white text-sm">Company</h4>
+              <ul className="space-y-2.5">
+                {["About Us", "Careers", "Blog", "Contact"].map((item) => (
+                  <li key={item}>
+                    <Link href="#" className="text-sm text-slate-400 hover:text-white transition-colors">{item}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-slate-500">
+        <div className="border-t border-white/10 pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs sm:text-sm text-slate-500 text-center sm:text-left">
             &copy; {new Date().getFullYear()} LearnXR. All rights reserved.
           </p>
-          <div className="flex items-center gap-6">
-            <Link
-              href="#"
-              className="text-sm text-slate-500 hover:text-white transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              href="#"
-              className="text-sm text-slate-500 hover:text-white transition-colors"
-            >
-              Terms of Service
-            </Link>
+          <div className="flex items-center gap-5 sm:gap-6">
+            <Link href="#" className="text-xs sm:text-sm text-slate-500 hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="#" className="text-xs sm:text-sm text-slate-500 hover:text-white transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>

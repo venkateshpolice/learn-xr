@@ -15,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="antialiased scroll-smooth">
-      <body className="min-h-screen bg-slate-950 text-white">
+      <body className="min-h-screen overflow-x-hidden bg-slate-950 text-white">
         {children}
         <Script
           type="module"
