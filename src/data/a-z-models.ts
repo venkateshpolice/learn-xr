@@ -8,7 +8,7 @@ export interface AZLetterModel {
 }
 
 const AZ_MODELS_S3_BASE =
-  "https://evoke-events-assets.s3.us-east-1.amazonaws.com/models/models/a-z/";
+  "https://evoke-events-assets.s3.us-east-1.amazonaws.com/models/models/a-z";
 
 function azModel(path: string): string {
   return `${AZ_MODELS_S3_BASE}/${path}`;
