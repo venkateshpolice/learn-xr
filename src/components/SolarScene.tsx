@@ -1,9 +1,11 @@
 "use client";
 
 import { useRef, useMemo, Suspense, useState, useCallback, useEffect } from "react";
-import { Canvas, useFrame, useThree, ThreeEvent } from "@react-three/fiber";
-import { Stars, OrbitControls, useTexture } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Stars, OrbitControls, useTexture, Text, Billboard } from "@react-three/drei";
 import * as THREE from "three";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { WebXRButton } from "@/components/trigonometry/WebXRButton";
 
 const TEXTURES = {
   mercury: "/textures/2k_mercury.jpg",
@@ -130,6 +132,38 @@ const PLANET_DATA: Record<string, PlanetInfo> = {
   },
 };
 
+function PlanetLabel({
+  name,
+  size,
+  hasRing,
+  ringOuter,
+}: {
+  name: string;
+  size: number;
+  hasRing?: boolean;
+  ringOuter?: number;
+}) {
+  const ringBoost = hasRing ? (ringOuter ?? size * 2.5) * 0.28 : 0;
+  const y = size * 1.2 + ringBoost + 0.12;
+  const fontSize = Math.min(Math.max(size * 0.34, 0.13), 0.52);
+
+  return (
+    <Billboard position={[0, y, 0]}>
+      <Text
+        fontSize={fontSize}
+        color="#f1f5f9"
+        anchorX="center"
+        anchorY="bottom"
+        outlineWidth={fontSize * 0.14}
+        outlineColor="#020617"
+        fillOpacity={0.95}
+      >
+        {name}
+      </Text>
+    </Billboard>
+  );
+}
+
 function Sun({ onSelect, paused, onHoverStart, onHoverEnd }: { onSelect: (id: string, pos: THREE.Vector3) => void; paused: boolean; onHoverStart: () => void; onHoverEnd: () => void }) {
   const sunRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
@@ -198,6 +232,19 @@ function Sun({ onSelect, paused, onHoverStart, onHoverEnd }: { onSelect: (id: st
         <meshBasicMaterial color="#FF2200" transparent opacity={0.04} blending={THREE.AdditiveBlending} side={THREE.BackSide} depthWrite={false} />
       </mesh>
       <pointLight intensity={12} distance={250} color="#FFF5E0" decay={1.2} />
+      <Billboard position={[0, 5.4, 0]}>
+        <Text
+          fontSize={0.55}
+          color="#fde68a"
+          anchorX="center"
+          anchorY="bottom"
+          outlineWidth={0.07}
+          outlineColor="#451a03"
+          fillOpacity={0.98}
+        >
+          Sun
+        </Text>
+      </Billboard>
     </group>
   );
 }
@@ -356,6 +403,12 @@ function TexturedPlanet({
           {PLANET_MOONS[id]?.map((moon) => (
             <MoonOrbit key={moon.name} moon={moon} />
           ))}
+          <PlanetLabel
+            name={PLANET_DATA[id]?.name ?? id}
+            size={size}
+            hasRing={hasRing}
+            ringOuter={ringOuter}
+          />
         </group>
       </group>
     </>
@@ -645,12 +698,65 @@ const PLANET_LIST = [
 
 const planetPositions: Record<string, THREE.Vector3> = {};
 
+function XROrbitGuard({ controlsRef }: { controlsRef: React.RefObject<{ enabled: boolean } | null> }) {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    const onStart = () => {
+      if (controlsRef.current) controlsRef.current.enabled = false;
+    };
+    const onEnd = () => {
+      if (controlsRef.current) controlsRef.current.enabled = true;
+    };
+    gl.xr.addEventListener("sessionstart", onStart);
+    gl.xr.addEventListener("sessionend", onEnd);
+    return () => {
+      gl.xr.removeEventListener("sessionstart", onStart);
+      gl.xr.removeEventListener("sessionend", onEnd);
+    };
+  }, [gl, controlsRef]);
+
+  return null;
+}
+
+/** Scale & position the solar system for room-scale AR / standing VR. */
+function XRWorldAdjustment({ children }: { children: React.ReactNode }) {
+  const { gl } = useThree();
+  const [xrLayout, setXrLayout] = useState<"desktop" | "ar" | "vr">("desktop");
+
+  useEffect(() => {
+    const onStart = () => {
+      const mode = gl.xr.getSession()?.mode;
+      setXrLayout(mode === "immersive-ar" ? "ar" : "vr");
+    };
+    const onEnd = () => setXrLayout("desktop");
+    gl.xr.addEventListener("sessionstart", onStart);
+    gl.xr.addEventListener("sessionend", onEnd);
+    return () => {
+      gl.xr.removeEventListener("sessionstart", onStart);
+      gl.xr.removeEventListener("sessionend", onEnd);
+    };
+  }, [gl]);
+
+  const scale = xrLayout === "ar" ? 0.028 : xrLayout === "vr" ? 0.12 : 1;
+  const position: [number, number, number] =
+    xrLayout === "ar" ? [0, 0.9, -1.4] : xrLayout === "vr" ? [0, 1.5, -2.5] : [0, 0, 0];
+
+  return (
+    <group scale={scale} position={position}>
+      {children}
+    </group>
+  );
+}
+
 export default function SolarScene() {
   const [selectedPlanet, setSelectedPlanet] = useState<string | null>(null);
   const [planetPos, setPlanetPos] = useState<THREE.Vector3 | null>(null);
   const [paused, setPaused] = useState(false);
   const [anyHovered, setAnyHovered] = useState(false);
-  const controlsRef = useRef<any>(null);
+  const controlsRef = useRef<{ enabled: boolean; target: THREE.Vector3; update: () => void } | null>(null);
+  const xrContainerRef = useRef<HTMLDivElement>(null);
+  const [planetsOpen, setPlanetsOpen] = useState(false);
 
   const handleSelect = useCallback((id: string, pos: THREE.Vector3) => {
     setSelectedPlanet(id);
@@ -671,30 +777,30 @@ export default function SolarScene() {
   const info = selectedPlanet ? PLANET_DATA[selectedPlanet] : null;
 
   return (
-    <div className="absolute inset-0">
+    <div ref={xrContainerRef} className="absolute inset-0">
       <Canvas
         shadows
         camera={{ position: [5, 18, 35], fov: 42 }}
         style={{ background: "transparent" }}
         gl={{
           antialias: true,
+          alpha: true,
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.8,
         }}
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
       >
         <color attach="background" args={["#000002"]} />
         <ambientLight intensity={0.25} color="#ffffff" />
-        {/* Deep background stars - distant galaxy */}
         <Stars radius={500} depth={300} count={12000} factor={8} saturation={0.2} fade speed={0.08} />
-        {/* Mid-field stars - closer, brighter */}
         <Stars radius={100} depth={80} count={3000} factor={4} saturation={0.4} fade speed={0.15} />
-        {/* Near-field stars - scattered around planets */}
         <Stars radius={30} depth={20} count={800} factor={2} saturation={0.6} fade speed={0.3} />
-        <NebulaDust />
-        <Suspense fallback={<Loader />}>
-          <Scene onSelect={handleSelect} paused={paused} hovered={anyHovered} onHoverStart={handleHoverStart} onHoverEnd={handleHoverEnd} />
-        </Suspense>
+        <XRWorldAdjustment>
+          <NebulaDust />
+          <Suspense fallback={<Loader />}>
+            <Scene onSelect={handleSelect} paused={paused} hovered={anyHovered} onHoverStart={handleHoverStart} onHoverEnd={handleHoverEnd} />
+          </Suspense>
+        </XRWorldAdjustment>
         <CameraAnimator
           targetPos={planetPos}
           planetSize={selectedPlanet ? PLANET_SIZES[selectedPlanet] || 0.5 : 0.5}
@@ -713,32 +819,35 @@ export default function SolarScene() {
           dampingFactor={0.05}
           rotateSpeed={0.5}
         />
+        <WebXRButton containerRef={xrContainerRef} mode="both" />
+        <XROrbitGuard controlsRef={controlsRef} />
       </Canvas>
 
-      {/* Planet Info Card */}
+      {/* Planet Info Card — bottom sheet on mobile, left panel on desktop */}
       {info && (
-        <div className="absolute inset-0 pointer-events-none flex items-end sm:items-center justify-center sm:justify-start p-4 sm:p-8 z-20">
-          <div className="pointer-events-auto w-full sm:w-96 glass-card rounded-2xl p-6 border border-white/10">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-2xl font-bold text-white">{info.name}</h3>
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+        <div className="absolute inset-x-0 bottom-0 sm:inset-0 pointer-events-none flex items-end sm:items-center justify-center sm:justify-start p-0 sm:p-8 z-30 pb-[max(0px,env(safe-area-inset-bottom))] sm:pb-8">
+          <div className="pointer-events-auto w-full sm:max-w-sm lg:w-96 max-h-[min(45dvh,360px)] sm:max-h-none overflow-y-auto overscroll-contain glass-card rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 border border-white/10 border-b-0 sm:border-b shadow-lg shadow-black/30">
+            <div className="sm:hidden w-10 h-1 rounded-full bg-white/20 mx-auto mb-3" />
+            <div className="flex items-start justify-between gap-3 mb-3 sm:mb-4">
+              <div className="min-w-0">
+                <h3 className="text-xl sm:text-2xl font-bold text-white truncate">{info.name}</h3>
+                <span className="inline-block mt-1 text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                   {info.type}
                 </span>
               </div>
               <button
+                type="button"
                 onClick={handleClose}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
+                className="p-2 rounded-lg hover:bg-white/10 transition-colors text-slate-400 hover:text-white shrink-0"
+                aria-label="Close planet info"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-sm text-slate-300 mb-5 leading-relaxed">{info.description}</p>
+            <p className="text-xs sm:text-sm text-slate-300 mb-4 sm:mb-5 leading-relaxed">{info.description}</p>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <div className="rounded-lg bg-white/[0.04] p-3">
                 <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Diameter</div>
                 <div className="text-sm font-semibold text-white">{info.diameter}</div>
@@ -764,25 +873,60 @@ export default function SolarScene() {
                 <div className="text-sm font-semibold text-white">{info.temperature}</div>
               </div>
             </div>
-
-            <button
-              onClick={handleClose}
-              className="mt-5 w-full py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-sm font-medium text-slate-300 hover:bg-white/[0.1] hover:text-white transition-all"
-            >
-              ← Back to Solar System
-            </button>
           </div>
         </div>
       )}
 
-      {/* Planet Navigation GUI - Top Right */}
-      <div className="absolute top-4 right-4 z-20">
-        <div className="glass-card rounded-xl p-3 border border-white/10 w-44">
-          <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-2 px-2">Planets</div>
+      {/* Planet picker — horizontal scroll on mobile, sidebar on desktop */}
+      <div className="absolute top-[3.25rem] sm:top-4 right-0 left-0 sm:left-auto sm:right-4 z-20 px-3 sm:px-0 pointer-events-none">
+        {/* Mobile: collapsible + horizontal chips */}
+        <div className="sm:hidden pointer-events-auto">
+          <button
+            type="button"
+            onClick={() => setPlanetsOpen((o) => !o)}
+            className="ml-auto flex items-center gap-2 glass-card rounded-xl px-3 py-2 border border-white/10 text-xs font-medium text-slate-300"
+          >
+            Planets
+            {planetsOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+          {planetsOpen && (
+            <div className="mt-2 glass-card rounded-xl p-2 border border-white/10 overflow-x-auto overscroll-x-contain">
+              <div className="flex gap-1.5 min-w-max pb-0.5">
+                {PLANET_LIST.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => {
+                      const livePos = planetPositions[p.id];
+                      const pos = livePos ? livePos.clone() : new THREE.Vector3(p.orbit, 0, 0);
+                      handleSelect(p.id, pos);
+                      setPlanetsOpen(false);
+                    }}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all ${
+                      selectedPlanet === p.id
+                        ? "bg-indigo-500/25 text-white border border-indigo-500/30"
+                        : "text-slate-400 border border-transparent hover:text-white hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.color }} />
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop: vertical list */}
+        <div className="hidden sm:block pointer-events-auto glass-card rounded-xl p-3 border border-white/10 w-44 max-h-[calc(100dvh-6rem)] overflow-y-auto overscroll-contain">
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-2 px-2 sticky top-0 bg-slate-900/80 backdrop-blur-sm py-1 -mx-1 rounded">
+            Planets
+          </div>
           <div className="flex flex-col gap-0.5">
             {PLANET_LIST.map((p) => (
               <button
                 key={p.id}
+                type="button"
                 onClick={() => {
                   const livePos = planetPositions[p.id];
                   const pos = livePos ? livePos.clone() : new THREE.Vector3(p.orbit, 0, 0);
@@ -804,9 +948,10 @@ export default function SolarScene() {
 
       {/* Hint */}
       {!selectedPlanet && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 text-center">
-          <p className="text-xs text-slate-400 glass-card px-4 py-2 rounded-full">
-            Click on any planet to learn more • Scroll to zoom • Drag to rotate
+        <div className="absolute bottom-[4.5rem] sm:bottom-20 left-1/2 -translate-x-1/2 z-10 text-center w-full max-w-[min(100%,20rem)] sm:max-w-sm px-4 pointer-events-none">
+          <p className="text-[10px] sm:text-xs text-slate-400 glass-card px-3 py-2 sm:px-4 rounded-2xl sm:rounded-full leading-relaxed">
+            <span className="sm:hidden">Tap a planet · Pinch to zoom · Drag to rotate</span>
+            <span className="hidden sm:inline">Click a planet to learn more · Drag to rotate · Enter AR / VR below</span>
           </p>
         </div>
       )}

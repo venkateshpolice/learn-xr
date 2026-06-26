@@ -16,6 +16,8 @@ export const siteImages = {
   audienceExploreLearn: "/img/audience-explore-learn.png",
   audienceClassroom: "/img/audience-classroom.png",
   heartView: "/img/heart_view.png",
+  arHeartQr: "/img/qrcode/heart%20qr.png",
+  arHeartMarker: "/img/qrcode/heart.jpg",
 } as const;
 
 export type SiteImageKey = keyof typeof siteImages;
