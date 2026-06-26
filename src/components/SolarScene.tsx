@@ -3,6 +3,7 @@
 import { useRef, useMemo, Suspense, useState, useCallback, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Stars, OrbitControls, useTexture, Text, Billboard } from "@react-three/drei";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { WebXRButton } from "@/components/trigonometry/WebXRButton";
@@ -513,7 +514,7 @@ function CameraAnimator({
   targetPos: THREE.Vector3 | null;
   planetSize: number;
   active: boolean;
-  controlsRef: React.RefObject<any>;
+  controlsRef: React.RefObject<OrbitControlsImpl | null>;
 }) {
   const { camera } = useThree();
   const animating = useRef(false);
@@ -698,7 +699,7 @@ const PLANET_LIST = [
 
 const planetPositions: Record<string, THREE.Vector3> = {};
 
-function XROrbitGuard({ controlsRef }: { controlsRef: React.RefObject<{ enabled: boolean } | null> }) {
+function XROrbitGuard({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl | null> }) {
   const { gl } = useThree();
 
   useEffect(() => {
@@ -726,8 +727,8 @@ function XRWorldAdjustment({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const onStart = () => {
-      const mode = gl.xr.getSession()?.mode;
-      setXrLayout(mode === "immersive-ar" ? "ar" : "vr");
+      const blend = gl.xr.getSession()?.environmentBlendMode;
+      setXrLayout(blend === "opaque" ? "vr" : "ar");
     };
     const onEnd = () => setXrLayout("desktop");
     gl.xr.addEventListener("sessionstart", onStart);
@@ -754,7 +755,7 @@ export default function SolarScene() {
   const [planetPos, setPlanetPos] = useState<THREE.Vector3 | null>(null);
   const [paused, setPaused] = useState(false);
   const [anyHovered, setAnyHovered] = useState(false);
-  const controlsRef = useRef<{ enabled: boolean; target: THREE.Vector3; update: () => void } | null>(null);
+  const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const xrContainerRef = useRef<HTMLDivElement>(null);
   const [planetsOpen, setPlanetsOpen] = useState(false);
 
