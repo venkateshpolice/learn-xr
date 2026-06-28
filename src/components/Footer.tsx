@@ -28,13 +28,28 @@ export default function Footer() {
             
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-10">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-10">
             <div>
               <h4 className="font-semibold mb-3 sm:mb-4 text-white text-sm">Platform</h4>
               <ul className="space-y-2.5">
                 {["For Students", "For Schools", "For Teachers", "Pricing"].map((item) => (
                   <li key={item}>
                     <Link href="#" className="text-sm text-slate-400 hover:text-white transition-colors">{item}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3 sm:mb-4 text-white text-sm">Study</h4>
+              <ul className="space-y-2.5">
+                {[
+                  { label: "NCERT Books (Class 1–12)", href: "/study" },
+                  { label: "Nursery AR", href: "/nursery" },
+                  { label: "Puzzle Games", href: "/nursery/puzzles" },
+                  { label: "Trigonometry", href: "/trigonometry" },
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="text-sm text-slate-400 hover:text-white transition-colors">{item.label}</Link>
                   </li>
                 ))}
               </ul>

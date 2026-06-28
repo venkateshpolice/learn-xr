@@ -7,11 +7,11 @@ import { Menu, X } from "lucide-react";
 
 const navLinks = [
   { href: "#features", label: "Features" },
-  { href: "#audience", label: "Audience" },
   { href: "#learning-journey", label: "Curriculum" },
   { href: "/labs", label: "Labs" },
   { href: "/ar", label: "AR" },
   { href: "/vr", label: "VR" },
+  { href: "/study", label: "Study Materials" },
   { href: "#testimonials", label: "Testimonials" },
 ];
 

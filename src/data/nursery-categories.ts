@@ -19,6 +19,22 @@ export interface Category {
 
 export const nurseryCategories: Category[] = [
   {
+    id: "puzzles",
+    label: "Fun Puzzles",
+    emoji: "🧩",
+    color: "violet",
+    gradient: "from-violet-500 to-pink-500",
+    description: "Color sort, shadows, counting & shape games",
+    href: "/nursery/puzzles",
+    badge: "Games",
+    items: [
+      { name: "Color Sort", modelUrl: "/nursery/puzzles/color-sort", poster: "" },
+      { name: "Shadow Match", modelUrl: "/nursery/puzzles/shadow-match", poster: "" },
+      { name: "Count & Pick", modelUrl: "/nursery/puzzles/count-fun", poster: "" },
+      { name: "Shape Matching", modelUrl: "/shape-matching", poster: "" },
+    ],
+  },
+  {
     id: "a-z",
     label: "A–Z Alphabet",
     emoji: "🔤",

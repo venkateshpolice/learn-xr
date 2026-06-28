@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo, Suspense, useState, useCallback, useEffect } from "react";
+import { useRef, useMemo, Suspense, useState, useCallback, useEffect, createContext, useContext } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Stars, OrbitControls, useTexture, Text, Billboard } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
@@ -166,6 +166,8 @@ function PlanetLabel({
 }
 
 function Sun({ onSelect, paused, onHoverStart, onHoverEnd }: { onSelect: (id: string, pos: THREE.Vector3) => void; paused: boolean; onHoverStart: () => void; onHoverEnd: () => void }) {
+  const xrLayout = useXRLayout();
+  const isAR = xrLayout === "ar";
   const sunRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
   const corona1Ref = useRef<THREE.Mesh>(null);
@@ -173,10 +175,16 @@ function Sun({ onSelect, paused, onHoverStart, onHoverEnd }: { onSelect: (id: st
   const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
+    if (isAR) return;
     document.body.style.cursor = hovered ? "pointer" : "auto";
     if (hovered) onHoverStart(); else onHoverEnd();
     return () => { document.body.style.cursor = "auto"; };
-  }, [hovered, onHoverStart, onHoverEnd]);
+  }, [hovered, onHoverStart, onHoverEnd, isAR]);
+
+  const handleSelect = useCallback((e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
+    onSelect("sun", new THREE.Vector3(0, 0, 0));
+  }, [onSelect]);
 
   const sunMaterial = useMemo(() => {
     return new THREE.ShaderMaterial({
@@ -214,24 +222,35 @@ function Sun({ onSelect, paused, onHoverStart, onHoverEnd }: { onSelect: (id: st
       <mesh
         ref={sunRef}
         material={sunMaterial}
-        onClick={(e) => { e.stopPropagation(); onSelect("sun", new THREE.Vector3(0, 0, 0)); }}
-        onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
-        onPointerOut={() => setHovered(false)}
+        onClick={handleSelect}
+        onPointerDown={handleSelect}
+        onPointerOver={(e) => { if (!isAR) { e.stopPropagation(); setHovered(true); } }}
+        onPointerOut={() => { if (!isAR) setHovered(false); }}
       >
         <sphereGeometry args={[2.2, 64, 64]} />
       </mesh>
-      <mesh ref={glowRef}>
-        <sphereGeometry args={[2.6, 32, 32]} />
-        <meshBasicMaterial color="#FF7700" transparent opacity={0.25} blending={THREE.AdditiveBlending} side={THREE.BackSide} depthWrite={false} />
-      </mesh>
-      <mesh ref={corona1Ref}>
-        <sphereGeometry args={[3.4, 32, 32]} />
-        <meshBasicMaterial color="#FF4400" transparent opacity={0.1} blending={THREE.AdditiveBlending} side={THREE.BackSide} depthWrite={false} />
-      </mesh>
-      <mesh ref={corona2Ref}>
-        <sphereGeometry args={[4.5, 32, 32]} />
-        <meshBasicMaterial color="#FF2200" transparent opacity={0.04} blending={THREE.AdditiveBlending} side={THREE.BackSide} depthWrite={false} />
-      </mesh>
+      {!isAR && (
+        <>
+          <mesh ref={glowRef} raycast={() => null}>
+            <sphereGeometry args={[2.6, 32, 32]} />
+            <meshBasicMaterial color="#FF7700" transparent opacity={0.25} blending={THREE.AdditiveBlending} side={THREE.BackSide} depthWrite={false} />
+          </mesh>
+          <mesh ref={corona1Ref} raycast={() => null}>
+            <sphereGeometry args={[3.4, 32, 32]} />
+            <meshBasicMaterial color="#FF4400" transparent opacity={0.1} blending={THREE.AdditiveBlending} side={THREE.BackSide} depthWrite={false} />
+          </mesh>
+          <mesh ref={corona2Ref} raycast={() => null}>
+            <sphereGeometry args={[4.5, 32, 32]} />
+            <meshBasicMaterial color="#FF2200" transparent opacity={0.04} blending={THREE.AdditiveBlending} side={THREE.BackSide} depthWrite={false} />
+          </mesh>
+        </>
+      )}
+      {isAR && (
+        <mesh onClick={handleSelect} onPointerDown={handleSelect}>
+          <sphereGeometry args={[5, 16, 16]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+      )}
       <pointLight intensity={12} distance={250} color="#FFF5E0" decay={1.2} />
       <Billboard position={[0, 5.4, 0]}>
         <Text
@@ -251,23 +270,21 @@ function Sun({ onSelect, paused, onHoverStart, onHoverEnd }: { onSelect: (id: st
 }
 
 function OrbitLine({ radius }: { radius: number }) {
-  const orbitPoints = useMemo(() => {
-    const pts = [];
+  const lineObj = useMemo(() => {
+    const pts: number[] = [];
     for (let i = 0; i <= 256; i++) {
       const angle = (i / 256) * Math.PI * 2;
       pts.push(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
     }
-    return new Float32Array(pts);
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(pts), 3));
+    const material = new THREE.LineBasicMaterial({ color: "#4466aa", opacity: 0.25, transparent: true });
+    const line = new THREE.Line(geometry, material);
+    line.raycast = () => {};
+    return line;
   }, [radius]);
 
-  return (
-    <line>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[orbitPoints, 3]} />
-      </bufferGeometry>
-      <lineBasicMaterial color="#4466aa" opacity={0.25} transparent />
-    </line>
-  );
+  return <primitive object={lineObj} />;
 }
 
 function TexturedPlanet({
@@ -309,6 +326,8 @@ function TexturedPlanet({
   onHoverStart: () => void;
   onHoverEnd: () => void;
 }) {
+  const xrLayout = useXRLayout();
+  const isAR = xrLayout === "ar";
   const meshRef = useRef<THREE.Mesh>(null);
   const groupRef = useRef<THREE.Group>(null);
   const glowRingRef = useRef<THREE.Mesh>(null);
@@ -318,10 +337,11 @@ function TexturedPlanet({
   texture.colorSpace = THREE.SRGBColorSpace;
 
   useEffect(() => {
+    if (isAR) return;
     document.body.style.cursor = hovered ? "pointer" : "auto";
     if (hovered) onHoverStart(); else onHoverEnd();
     return () => { document.body.style.cursor = "auto"; };
-  }, [hovered, onHoverStart, onHoverEnd]);
+  }, [hovered, onHoverStart, onHoverEnd, isAR]);
 
   useFrame(({ clock }) => {
     if (paused) {
@@ -353,7 +373,7 @@ function TexturedPlanet({
     }
   });
 
-  const handleClick = useCallback((e: any) => {
+  const handleClick = useCallback((e: { stopPropagation: () => void }) => {
     e.stopPropagation();
     if (groupRef.current) {
       const worldPos = new THREE.Vector3();
@@ -361,6 +381,8 @@ function TexturedPlanet({
       onSelect(id, worldPos);
     }
   }, [id, onSelect]);
+
+  const hitScale = isAR ? Math.max(size * 15, 3.5) : size;
 
   return (
     <>
@@ -370,21 +392,30 @@ function TexturedPlanet({
           <mesh
             ref={meshRef}
             onClick={handleClick}
-            onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
-            onPointerOut={() => setHovered(false)}
+            onPointerDown={handleClick}
+            onPointerOver={(e) => { if (!isAR) { e.stopPropagation(); setHovered(true); } }}
+            onPointerOut={() => { if (!isAR) setHovered(false); }}
             castShadow
             receiveShadow
           >
             <sphereGeometry args={[size, 64, 64]} />
             <meshStandardMaterial map={texture} roughness={0.45} metalness={0.12} emissive="#333333" emissiveIntensity={0.1} />
           </mesh>
+          {isAR && (
+            <mesh onClick={handleClick} onPointerDown={handleClick}>
+              <sphereGeometry args={[hitScale, 16, 16]} />
+              <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+            </mesh>
+          )}
           {/* Hover glow ring */}
-          <mesh ref={glowRingRef} rotation={[Math.PI / 2, 0, 0]}>
+          {!isAR && (
+          <mesh ref={glowRingRef} rotation={[Math.PI / 2, 0, 0]} raycast={() => null}>
             <ringGeometry args={[size * 1.3, size * 1.5, 64]} />
             <meshBasicMaterial color="#66aaff" transparent opacity={0} side={THREE.DoubleSide} blending={THREE.AdditiveBlending} depthWrite={false} />
           </mesh>
+          )}
           {hasAtmosphere && (
-            <mesh>
+            <mesh raycast={() => null}>
               <sphereGeometry args={[size * 1.04, 48, 48]} />
               <shaderMaterial
                 vertexShader={`varying vec3 vNormal;varying vec3 vViewDir;void main(){vNormal=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.);vViewDir=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}`}
@@ -395,7 +426,7 @@ function TexturedPlanet({
             </mesh>
           )}
           {hasRing && (
-            <mesh rotation={[Math.PI / 2.1, 0, 0]}>
+            <mesh rotation={[Math.PI / 2.1, 0, 0]} raycast={() => null}>
               <ringGeometry args={[ringInner || size * 1.5, ringOuter || size * 2.5, 128]} />
               <meshBasicMaterial color={ringColor || "#C8A86B"} transparent opacity={0.6} side={THREE.DoubleSide} depthWrite={false} />
             </mesh>
@@ -443,7 +474,7 @@ function MoonOrbit({ moon }: { moon: MoonData }) {
 
   return (
     <group ref={ref}>
-      <mesh ref={meshRef} castShadow receiveShadow>
+      <mesh ref={meshRef} castShadow receiveShadow raycast={() => null}>
         <sphereGeometry args={[moon.size, 24, 24]} />
         <meshStandardMaterial color={moon.color} roughness={0.8} metalness={0.0} />
       </mesh>
@@ -584,6 +615,8 @@ function SunLight() {
 }
 
 function Scene({ onSelect, paused, hovered, onHoverStart, onHoverEnd }: { onSelect: (id: string, pos: THREE.Vector3) => void; paused: boolean; hovered: boolean; onHoverStart: () => void; onHoverEnd: () => void }) {
+  const xrLayout = useXRLayout();
+  const isAR = xrLayout === "ar";
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((_, delta) => {
@@ -603,7 +636,7 @@ function Scene({ onSelect, paused, hovered, onHoverStart, onHoverEnd }: { onSele
       <TexturedPlanet id="venus" orbitRadius={6.0} size={0.38} textureUrl={TEXTURES.venus} speed={0.22} offset={2.4} rotationSpeed={0.0008} tilt={177} hasAtmosphere atmosphereColor="#D4A030" onSelect={onSelect} paused={stopped} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} />
       <TexturedPlanet id="earth" orbitRadius={8.0} size={0.42} textureUrl={TEXTURES.earth} speed={0.18} offset={4.1} rotationSpeed={0.004} tilt={23.4} hasAtmosphere atmosphereColor="#5599FF" onSelect={onSelect} paused={stopped} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} />
       <TexturedPlanet id="mars" orbitRadius={9.8} size={0.28} textureUrl={TEXTURES.mars} speed={0.14} offset={1.5} rotationSpeed={0.003} tilt={25.2} hasAtmosphere atmosphereColor="#BB5533" onSelect={onSelect} paused={stopped} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} />
-      <AsteroidBelt paused={stopped} />
+      {!isAR && <AsteroidBelt paused={stopped} />}
       <TexturedPlanet id="jupiter" orbitRadius={13.0} size={0.95} textureUrl={TEXTURES.jupiter} speed={0.08} offset={3.3} rotationSpeed={0.008} tilt={3.1} hasAtmosphere atmosphereColor="#CC9955" onSelect={onSelect} paused={stopped} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} />
       <TexturedPlanet id="saturn" orbitRadius={17.0} size={0.8} textureUrl={TEXTURES.saturn} speed={0.05} offset={5.0} rotationSpeed={0.007} tilt={26.7} hasRing ringInner={1.1} ringOuter={2.0} ringColor="#C8A050" hasAtmosphere atmosphereColor="#D4C080" onSelect={onSelect} paused={stopped} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} />
       <TexturedPlanet id="uranus" orbitRadius={21.0} size={0.5} textureUrl={TEXTURES.uranus} speed={0.03} offset={2.2} rotationSpeed={0.005} tilt={97.8} hasRing ringInner={0.7} ringOuter={1.0} ringColor="#80BBBB" hasAtmosphere atmosphereColor="#66CCCC" onSelect={onSelect} paused={stopped} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} />
@@ -699,6 +732,70 @@ const PLANET_LIST = [
 
 const planetPositions: Record<string, THREE.Vector3> = {};
 
+type XRLayout = "desktop" | "ar" | "vr";
+const XRLayoutContext = createContext<XRLayout>("desktop");
+function useXRLayout() {
+  return useContext(XRLayoutContext);
+}
+
+/** Tracks AR/VR session and provides layout context. */
+function XRSessionManager({ children }: { children: React.ReactNode }) {
+  const { gl } = useThree();
+  const [xrLayout, setXrLayout] = useState<XRLayout>("desktop");
+
+  useEffect(() => {
+    const onStart = () => {
+      const blend = gl.xr.getSession()?.environmentBlendMode;
+      const layout: XRLayout = blend === "opaque" ? "vr" : "ar";
+      setXrLayout(layout);
+      if (layout === "ar") {
+        gl.setClearColor(0x000000, 0);
+      }
+    };
+    const onEnd = () => {
+      setXrLayout("desktop");
+      gl.setClearColor(0x000002, 1);
+    };
+    gl.xr.addEventListener("sessionstart", onStart);
+    gl.xr.addEventListener("sessionend", onEnd);
+    return () => {
+      gl.xr.removeEventListener("sessionstart", onStart);
+      gl.xr.removeEventListener("sessionend", onEnd);
+    };
+  }, [gl]);
+
+  return <XRLayoutContext.Provider value={xrLayout}>{children}</XRLayoutContext.Provider>;
+}
+
+function XRWorldScale({ children }: { children: React.ReactNode }) {
+  const xrLayout = useXRLayout();
+  const scale = xrLayout === "ar" ? 0.028 : xrLayout === "vr" ? 0.12 : 1;
+  const position: [number, number, number] =
+    xrLayout === "ar" ? [0, 0.9, -1.4] : xrLayout === "vr" ? [0, 1.5, -2.5] : [0, 0, 0];
+
+  return (
+    <group scale={scale} position={position}>
+      {children}
+    </group>
+  );
+}
+
+function BackgroundEffects() {
+  const xrLayout = useXRLayout();
+  if (xrLayout === "ar") return null;
+
+  return (
+    <>
+      <color attach="background" args={["#000002"]} />
+      <Stars radius={500} depth={300} count={12000} factor={8} saturation={0.2} fade speed={0.08} />
+      <Stars radius={100} depth={80} count={3000} factor={4} saturation={0.4} fade speed={0.15} />
+      <Stars radius={30} depth={20} count={800} factor={2} saturation={0.6} fade speed={0.3} />
+      <NebulaDust />
+    </>
+  );
+}
+
+/** Disable orbit controls during XR; camera animation is desktop-only. */
 function XROrbitGuard({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl | null> }) {
   const { gl } = useThree();
 
@@ -720,33 +817,26 @@ function XROrbitGuard({ controlsRef }: { controlsRef: React.RefObject<OrbitContr
   return null;
 }
 
-/** Scale & position the solar system for room-scale AR / standing VR. */
-function XRWorldAdjustment({ children }: { children: React.ReactNode }) {
-  const { gl } = useThree();
-  const [xrLayout, setXrLayout] = useState<"desktop" | "ar" | "vr">("desktop");
-
-  useEffect(() => {
-    const onStart = () => {
-      const blend = gl.xr.getSession()?.environmentBlendMode;
-      setXrLayout(blend === "opaque" ? "vr" : "ar");
-    };
-    const onEnd = () => setXrLayout("desktop");
-    gl.xr.addEventListener("sessionstart", onStart);
-    gl.xr.addEventListener("sessionend", onEnd);
-    return () => {
-      gl.xr.removeEventListener("sessionstart", onStart);
-      gl.xr.removeEventListener("sessionend", onEnd);
-    };
-  }, [gl]);
-
-  const scale = xrLayout === "ar" ? 0.028 : xrLayout === "vr" ? 0.12 : 1;
-  const position: [number, number, number] =
-    xrLayout === "ar" ? [0, 0.9, -1.4] : xrLayout === "vr" ? [0, 1.5, -2.5] : [0, 0, 0];
-
+function DesktopCameraAnimator({
+  targetPos,
+  planetSize,
+  active,
+  controlsRef,
+}: {
+  targetPos: THREE.Vector3 | null;
+  planetSize: number;
+  active: boolean;
+  controlsRef: React.RefObject<OrbitControlsImpl | null>;
+}) {
+  const xrLayout = useXRLayout();
+  if (xrLayout !== "desktop") return null;
   return (
-    <group scale={scale} position={position}>
-      {children}
-    </group>
+    <CameraAnimator
+      targetPos={targetPos}
+      planetSize={planetSize}
+      active={active}
+      controlsRef={controlsRef}
+    />
   );
 }
 
@@ -791,37 +881,35 @@ export default function SolarScene() {
         }}
         dpr={[1, 1.5]}
       >
-        <color attach="background" args={["#000002"]} />
-        <ambientLight intensity={0.25} color="#ffffff" />
-        <Stars radius={500} depth={300} count={12000} factor={8} saturation={0.2} fade speed={0.08} />
-        <Stars radius={100} depth={80} count={3000} factor={4} saturation={0.4} fade speed={0.15} />
-        <Stars radius={30} depth={20} count={800} factor={2} saturation={0.6} fade speed={0.3} />
-        <XRWorldAdjustment>
-          <NebulaDust />
-          <Suspense fallback={<Loader />}>
-            <Scene onSelect={handleSelect} paused={paused} hovered={anyHovered} onHoverStart={handleHoverStart} onHoverEnd={handleHoverEnd} />
-          </Suspense>
-        </XRWorldAdjustment>
-        <CameraAnimator
-          targetPos={planetPos}
-          planetSize={selectedPlanet ? PLANET_SIZES[selectedPlanet] || 0.5 : 0.5}
-          active={paused}
-          controlsRef={controlsRef}
-        />
-        <OrbitControls
-          ref={controlsRef}
-          enableZoom
-          enablePan={false}
-          minDistance={2}
-          maxDistance={55}
-          minPolarAngle={Math.PI * 0.15}
-          maxPolarAngle={Math.PI * 0.85}
-          enableDamping
-          dampingFactor={0.05}
-          rotateSpeed={0.5}
-        />
-        <WebXRButton containerRef={xrContainerRef} mode="both" />
-        <XROrbitGuard controlsRef={controlsRef} />
+        <XRSessionManager>
+          <BackgroundEffects />
+          <ambientLight intensity={0.25} color="#ffffff" />
+          <XRWorldScale>
+            <Suspense fallback={<Loader />}>
+              <Scene onSelect={handleSelect} paused={paused} hovered={anyHovered} onHoverStart={handleHoverStart} onHoverEnd={handleHoverEnd} />
+            </Suspense>
+          </XRWorldScale>
+          <DesktopCameraAnimator
+            targetPos={planetPos}
+            planetSize={selectedPlanet ? PLANET_SIZES[selectedPlanet] || 0.5 : 0.5}
+            active={paused}
+            controlsRef={controlsRef}
+          />
+          <OrbitControls
+            ref={controlsRef}
+            enableZoom
+            enablePan={false}
+            minDistance={2}
+            maxDistance={55}
+            minPolarAngle={Math.PI * 0.15}
+            maxPolarAngle={Math.PI * 0.85}
+            enableDamping
+            dampingFactor={0.05}
+            rotateSpeed={0.5}
+          />
+          <WebXRButton containerRef={xrContainerRef} mode="both" />
+          <XROrbitGuard controlsRef={controlsRef} />
+        </XRSessionManager>
       </Canvas>
 
       {/* Planet Info Card — bottom sheet on mobile, left panel on desktop */}

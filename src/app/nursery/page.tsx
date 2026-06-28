@@ -31,7 +31,7 @@ export default function NurseryPage() {
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-6">
               <Sparkles className="w-4 h-4 text-pink-400" />
-              <span className="text-sm text-slate-300">Ages 3–5 Years</span>
+              <span className="text-sm text-slate-300">Ages 3–7 Years</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
               Nursery <span className="gradient-text">AR Learning</span>
@@ -40,12 +40,20 @@ export default function NurseryPage() {
               Choose a category and explore 3D models in Augmented Reality.
               Point your camera and watch objects come to life!
             </p>
-            <Link
-              href="/shape-matching"
-              className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-sm shadow-lg hover:scale-[1.02] transition-transform"
-            >
-              🧩 Shape Matching Puzzle — Play Now
-            </Link>
+            <div className="flex flex-wrap justify-center gap-3 mt-6">
+              <Link
+                href="/nursery/puzzles"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-violet-500 to-pink-500 text-white font-semibold text-sm shadow-lg hover:scale-[1.02] transition-transform"
+              >
+                🧩 Puzzle Games — Play Now
+              </Link>
+              <Link
+                href="/shape-matching"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-sm shadow-lg hover:scale-[1.02] transition-transform"
+              >
+                🔺 3D Shape Matching
+              </Link>
+            </div>
           </motion.div>
         </div>
       </div>

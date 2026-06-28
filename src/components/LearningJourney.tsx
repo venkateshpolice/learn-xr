@@ -8,6 +8,8 @@ import { ChevronRight, Sparkles } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { siteImages } from "@/data/site-images";
 import { nurseryCategories, getCategoryHref } from "@/data/nursery-categories";
+import { getClassesForGradeBand } from "@/data/ncert-curriculum";
+import { BookOpen } from "lucide-react";
 
 interface GradeData {
   id: string;
@@ -148,34 +150,75 @@ export default function LearningJourney() {
                     <Link
                       key={category.id}
                       href={getCategoryHref(category)}
-                      className="group rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 sm:p-4 hover:bg-white/[0.06] transition-all text-center"
+                      className="group rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 sm:p-4 hover:bg-white/[0.06] transition-all text-center relative"
                     >
+                      {category.badge && (
+                        <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-gradient-to-r from-violet-600 to-pink-600 text-[8px] font-bold uppercase tracking-wide text-white">
+                          {category.badge}
+                        </span>
+                      )}
                       <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center mx-auto mb-2 group-hover:scale-105 transition-transform`}>
                         <span className="text-2xl">{category.emoji}</span>
                       </div>
                       <h4 className="font-semibold text-white text-xs sm:text-sm">{category.label}</h4>
-                      <p className="text-[10px] text-slate-500">{category.items.length} items</p>
+                      <p className="text-[10px] text-slate-500">
+                        {category.href ? "Play now" : `${category.items.length} items`}
+                      </p>
                     </Link>
                   ))}
                 </div>
               ) : (
-                <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
-                  {activeData.subjects.map((subject) => (
-                    <div key={subject.name} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 sm:p-5">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-xl">{subject.emoji}</span>
-                        <h4 className="font-semibold text-white text-sm sm:text-base">{subject.name}</h4>
-                      </div>
-                      <ul className="space-y-1.5">
-                        {subject.topics.map((topic) => (
-                          <li key={topic} className="flex items-center gap-2 text-xs sm:text-sm text-slate-400">
-                            <ChevronRight className="w-3 h-3 text-indigo-400 shrink-0" />
-                            {topic}
-                          </li>
-                        ))}
-                      </ul>
+                <div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+                    <p className="text-sm text-slate-400">
+                      NCERT textbooks, study materials & MCQ practice for each class.
+                    </p>
+                    <Link
+                      href="/study"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs sm:text-sm font-semibold transition-colors"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      All NCERT Materials
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                    {getClassesForGradeBand(activeGrade).map((cls) => (
+                      <Link
+                        key={cls.id}
+                        href={`/study/class/${cls.id}`}
+                        className="group rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 sm:p-4 hover:bg-white/[0.06] transition-all text-center"
+                      >
+                        <div
+                          className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${cls.color} flex items-center justify-center mx-auto mb-2 group-hover:scale-105 transition-transform font-bold text-lg`}
+                        >
+                          {cls.grade}
+                        </div>
+                        <h4 className="font-semibold text-white text-xs sm:text-sm">{cls.label}</h4>
+                        <p className="text-[10px] text-slate-500">{cls.subjects.length} subjects</p>
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="mt-6 pt-6 border-t border-white/[0.06]">
+                    <p className="text-xs text-slate-500 mb-3 uppercase tracking-wider">Also explore</p>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {activeData.subjects.map((subject) => (
+                        <div key={subject.name} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 sm:p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">{subject.emoji}</span>
+                            <h4 className="font-semibold text-white text-xs sm:text-sm">{subject.name}</h4>
+                          </div>
+                          <ul className="space-y-1">
+                            {subject.topics.slice(0, 3).map((topic) => (
+                              <li key={topic} className="flex items-center gap-2 text-[11px] text-slate-500">
+                                <ChevronRight className="w-3 h-3 text-indigo-400 shrink-0" />
+                                {topic}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
               )}
             </motion.div>
