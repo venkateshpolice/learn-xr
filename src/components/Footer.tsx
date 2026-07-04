@@ -84,7 +84,7 @@ export default function Footer() {
 
         <div className="border-t border-white/10 pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs sm:text-sm text-slate-500 text-center sm:text-left">
-            &copy; {new Date().getFullYear()} Nexscape. All rights reserved.
+            &copy; {new Date().getFullYear()} NexScape. All rights reserved.
           </p>
           <div className="flex items-center gap-5 sm:gap-6">
             <Link href="#" className="text-xs sm:text-sm text-slate-500 hover:text-white transition-colors">Privacy Policy</Link>
