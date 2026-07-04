@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import { AuthNav } from "@/components/auth/AuthNav";
 
 const navLinks = [
   { href: "#features", label: "Features" },
@@ -12,6 +13,7 @@ const navLinks = [
   { href: "/ar", label: "AR" },
   { href: "/vr", label: "VR" },
   { href: "/study", label: "Study Materials" },
+  { href: "/teacher", label: "Teachers" },
   { href: "#testimonials", label: "Testimonials" },
 ];
 
@@ -44,7 +46,7 @@ export default function Navbar() {
               </svg>
             </div>
             <span className="text-lg font-bold">
-              Learn<span className="text-indigo-400">XR</span>
+              Nex<span className="text-indigo-400">scape</span>
             </span>
           </Link>
 
@@ -61,12 +63,7 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="#cta"
-              className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors"
-            >
-              Get Started
-            </Link>
+            <AuthNav />
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="lg:hidden p-2 text-slate-300 hover:text-white"
@@ -94,6 +91,9 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              <div className="pt-3 border-t border-white/10">
+                <AuthNav mobile />
+              </div>
             </div>
           </motion.div>
         )}

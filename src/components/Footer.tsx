@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { siteImages } from "@/data/site-images";
+import FooterAuthLinks from "@/components/auth/FooterAuthLinks";
 
 export default function Footer() {
   return (
@@ -18,7 +19,7 @@ export default function Footer() {
                 </svg>
               </div>
               <span className="text-xl font-bold">
-                Learn<span className="text-indigo-400">XR</span>
+                Nex<span className="text-indigo-400">scape</span>
               </span>
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-sm">
@@ -31,13 +32,7 @@ export default function Footer() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-10">
             <div>
               <h4 className="font-semibold mb-3 sm:mb-4 text-white text-sm">Platform</h4>
-              <ul className="space-y-2.5">
-                {["For Students", "For Schools", "For Teachers", "Pricing"].map((item) => (
-                  <li key={item}>
-                    <Link href="#" className="text-sm text-slate-400 hover:text-white transition-colors">{item}</Link>
-                  </li>
-                ))}
-              </ul>
+              <FooterAuthLinks />
             </div>
             <div>
               <h4 className="font-semibold mb-3 sm:mb-4 text-white text-sm">Study</h4>
@@ -72,9 +67,14 @@ export default function Footer() {
             <div className="col-span-2 sm:col-span-1">
               <h4 className="font-semibold mb-3 sm:mb-4 text-white text-sm">Company</h4>
               <ul className="space-y-2.5">
-                {["About Us", "Careers", "Blog", "Contact"].map((item) => (
-                  <li key={item}>
-                    <Link href="#" className="text-sm text-slate-400 hover:text-white transition-colors">{item}</Link>
+                {[
+                  { label: "About Us", href: "/about" },
+                  { label: "Careers", href: "#" },
+                  { label: "Blog", href: "/blog" },
+                  { label: "Contact Us", href: "/contact" },
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="text-sm text-slate-400 hover:text-white transition-colors">{item.label}</Link>
                   </li>
                 ))}
               </ul>
@@ -84,7 +84,7 @@ export default function Footer() {
 
         <div className="border-t border-white/10 pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs sm:text-sm text-slate-500 text-center sm:text-left">
-            &copy; {new Date().getFullYear()} LearnXR. All rights reserved.
+            &copy; {new Date().getFullYear()} Nexscape. All rights reserved.
           </p>
           <div className="flex items-center gap-5 sm:gap-6">
             <Link href="#" className="text-xs sm:text-sm text-slate-500 hover:text-white transition-colors">Privacy Policy</Link>

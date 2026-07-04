@@ -53,7 +53,7 @@ export default function CTA() {
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </a>
               <a
-                href="#cta"
+                href="/contact?subject=schools"
                 className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 sm:px-8 py-3.5 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base border border-white/20 bg-white/[0.08] hover:bg-white/[0.12] backdrop-blur-sm transition-all"
               >
                 <School className="w-4 h-4" />

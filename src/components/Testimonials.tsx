@@ -26,7 +26,7 @@ const testimonials = [
     name: "Anita Reddy",
     role: "Principal, Greenfield International",
     content:
-      "We implemented LearnXR across all our science classes. Test scores improved by 40% and student engagement went through the roof.",
+      "We implemented Nexscape across all our science classes. Test scores improved by 40% and student engagement went through the roof.",
     rating: 5,
   },
 ];

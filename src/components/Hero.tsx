@@ -136,7 +136,7 @@ export default function Hero() {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform hidden min-[480px]:block" />
             </a>
             <a
-              href="#cta"
+              href="/contact?subject=schools"
               className="w-full min-[480px]:w-auto min-h-[48px] inline-flex items-center justify-center px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base md:text-lg border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/25 active:scale-[0.98] transition-all duration-300"
             >
               Request School Demo
