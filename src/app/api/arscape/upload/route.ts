@@ -3,12 +3,23 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { getSessionUser } from "@/lib/auth";
 import { generateObjectId } from "@/lib/arscape-utils";
+import { isReadOnlyServerless } from "@/lib/model-storage";
 
 export async function POST(request: Request) {
   try {
     const session = await getSessionUser();
     if (!session || (session.role !== "teacher" && session.role !== "admin")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (isReadOnlyServerless()) {
+      return NextResponse.json(
+        {
+          error:
+            "File upload is not available on this host yet. Use Sketchfab library models or deploy with object storage (S3).",
+        },
+        { status: 503 },
+      );
     }
 
     const formData = await request.formData();
