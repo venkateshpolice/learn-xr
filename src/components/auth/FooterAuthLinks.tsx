@@ -49,15 +49,6 @@ export default function FooterAuthLinks() {
           </button>
         </li>
       ))}
-      <li>
-        <button
-          type="button"
-          onClick={() => openAuth({ mode: "signin" })}
-          className="text-sm text-slate-400 hover:text-white transition-colors text-left"
-        >
-          Sign In
-        </button>
-      </li>
     </ul>
   );
 }

@@ -54,66 +54,57 @@ const values = [
 
 const milestones = [
   {
-    year: "2022",
+    year: "2025",
     title: "The Spark",
     description: "Nexscape began as a classroom experiment — could AR make abstract science feel real?",
   },
   {
-    year: "2023",
+    year: "2026",
     title: "First Labs Ship",
-    description: "Solar System, Water Cycle, and Chemistry Lab launched to pilot schools across India.",
-  },
-  {
-    year: "2024",
-    title: "XR Platform Grows",
-    description: "40+ interactive experiences, WebXR support, and nursery AR for early learners.",
-  },
-  {
-    year: "2025",
-    title: "Schools at Scale",
-    description: "200+ institutions onboarded with teacher dashboards and curriculum mapping tools.",
+    description: "Solar System, Water Cycle, and Chemistry Lab launched to pilot schools in tier-2 cities ",
   },
   {
     year: "2026",
     title: "The Nexscape Era",
-    description: "Rebranded and rebuilt — a unified immersive learning platform for every learner.",
+    description: "Rebranded and rebuilt — a unified immersive learning platform for every learner in tier-2 cities.",
   },
 ];
 
 const team = [
+ 
   {
-    name: "Priya Sharma",
+    name: "Prasuna Parvathi",
     role: "Co-Founder & CEO",
-    bio: "Former educator turned product builder. Passionate about making STEM accessible in tier-2 cities.",
-    initials: "PS",
-    gradient: "from-indigo-500 to-violet-500",
-  },
-  {
-    name: "Arjun Mehta",
-    role: "Head of Engineering",
-    bio: "Three.js & WebXR specialist. Previously built simulation tools for aerospace training.",
-    initials: "AM",
+    bio: "Founder of Nexscape. Passionate about making education accessible to all.",
+    initials: "PP",
     gradient: "from-cyan-500 to-blue-500",
   },
   {
-    name: "Sneha Reddy",
-    role: "Curriculum Lead",
-    bio: "NCERT textbook author and science teacher with 12 years of classroom experience.",
-    initials: "SR",
+    name: "Venkatesh P",
+    role: "Co-Founder & CTO",
+    bio: "Former Project Lead at PlugXR and Wipro. Passionate about building scalable platforms, AI-powered applications, and immersive 3D/XR experiences.",
+    initials: "VP",
+    gradient: "from-indigo-500 to-violet-500",
+  },
+  {
+    name: "Ganesh K",
+    role: "Senior Software Engineer",
+    bio: "Experienced software engineer with a passion for building scalable and efficient systems.",
+    initials: "GK",
     gradient: "from-emerald-500 to-teal-500",
   },
   {
-    name: "Rahul Kapoor",
-    role: "Head of Design",
-    bio: "Crafts immersive UI that feels intuitive for 5-year-olds and 15-year-olds alike.",
-    initials: "RK",
+    name: "Namdev G",
+      role: "AI/ML Engineer",
+      bio: "AI/ML Engineer with a passion for building intelligent systems.",
+    initials: "NG",
     gradient: "from-fuchsia-500 to-pink-500",
   },
 ];
 
 const stats = [
-  { value: "10K+", label: "Active Students", icon: Users },
-  { value: "200+", label: "Partner Schools", icon: MapPin },
+  { value: "1K+", label: "Active Students", icon: Users },
+  { value: "10+", label: "Partner Schools", icon: MapPin },
   { value: "50+", label: "Interactive Labs", icon: Rocket },
   { value: "12", label: "XR Experiences", icon: Sparkles },
 ];
@@ -443,7 +434,7 @@ export default function AboutContent() {
             <div className="lg:pt-4">
               {milestones.map((item, i) => (
                 <TimelineItem
-                  key={item.year}
+                  key={`${item.year}-${item.title}`}
                   item={item}
                   index={i}
                   isLast={i === milestones.length - 1}

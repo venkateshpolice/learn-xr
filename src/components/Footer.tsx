@@ -19,7 +19,7 @@ export default function Footer() {
                 </svg>
               </div>
               <span className="text-xl font-bold">
-                Nex<span className="text-indigo-400">scape</span>
+                Nex<span className="text-indigo-400">Scape</span>
               </span>
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-sm">

@@ -1,6 +1,0 @@
-git -c credential.helper= push origin main
-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
-
-
- GIT_ASKPASS= git -c credential.helper= push origin main
-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

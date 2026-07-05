@@ -46,7 +46,7 @@ export default function Navbar() {
               </svg>
             </div>
             <span className="text-lg font-bold">
-              Nex<span className="text-indigo-400">scape</span>
+              Nex<span className="text-indigo-400">Scape</span>
             </span>
           </Link>
 
